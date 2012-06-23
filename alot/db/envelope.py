@@ -157,7 +157,7 @@ class Envelope(object):
             inner_msg = textpart
 
         if self.sign:
-            plaintext = crypto.email_as_string(inner_msg)
+            plaintext = basetext = inner_msg.as_string().replace('\n', '\r\n')
             logging.info('signing plaintext: ' + plaintext)
 
             try:
