@@ -158,7 +158,7 @@ class Envelope(object):
 
         if self.sign:
             plaintext = basetext = inner_msg.as_string().replace('\n', '\r\n')
-            logging.info('signing plaintext: ' + plaintext)
+            logging.debug('signing plaintext: ' + plaintext)
 
             try:
                 signatures, signature_str = crypto.detached_signature_for(
