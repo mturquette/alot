@@ -1,7 +1,7 @@
 # vim:ts=4:sw=4:expandtab
 import re
 
-from email.generator import Generator
+from alot.amended.generator import Generator
 from cStringIO import StringIO
 from alot.errors import GPGProblem
 from email.mime.multipart import MIMEMultipart
