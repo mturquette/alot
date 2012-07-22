@@ -2,11 +2,36 @@
 import re
 
 from alot.amended.generator import Generator
+from email.generator import Generator as OGenerator
 from cStringIO import StringIO
 from alot.errors import GPGProblem
 from email.mime.multipart import MIMEMultipart
 import gpgme
 
+def Oemail_as_string(mail):
+    """
+    Converts the given message to a string, without mangling "From" lines
+    (like as_string() does).
+
+    :param mail: email to convert to string
+    :rtype: str
+    """
+    fp = StringIO()
+    g = OGenerator(fp, mangle_from_=False)
+    g.flatten(mail)
+    as_string = RFC3156_canonicalize(fp.getvalue())
+
+    if isinstance(mail, MIMEMultipart):
+        # Get the boundary for later
+        boundary = mail.get_boundary()
+
+        # Workaround for http://bugs.python.org/issue14983:
+        # Insert a newline before the outer mail boundary so that other mail
+        # clients (like KMail, Claws-Mail, mutt, …) can verify the signature when
+        # sending an email which contains attachments.
+        as_string = re.sub(r'--(\r\n)--' + boundary,
+            '--\g<1>\g<1>--' + boundary, as_string, flags=re.MULTILINE)
+    return as_string
 
 def email_as_string(mail):
     """

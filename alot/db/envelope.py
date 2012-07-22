@@ -21,6 +21,7 @@ from attachment import Attachment
 from utils import encode_header
 
 
+
 class Envelope(object):
     """a message that is not yet sent and still editable"""
     def __init__(self, template=None, bodytext=u'', headers={}, attachments=[],
@@ -134,6 +135,16 @@ class Envelope(object):
 
         if self.sent_time:
             self.modified_since_sent = True
+
+
+    def dbm(self):
+        mail = self.construct_mail()
+        f = open('correct','w')
+        f.write(crypto.email_as_string(mail))
+        f.close()
+        f = open('incorrect','w')
+        f.write(crypto.Oemail_as_string(mail))
+        f.close()
 
     def construct_mail(self):
         """
