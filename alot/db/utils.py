@@ -11,7 +11,7 @@ import logging
 import mailcap
 from cStringIO import StringIO
 
-import alot.crypto as crypto
+#import alot.crypto as crypto
 import alot.helper as helper
 from alot.errors import GPGProblem
 from alot.settings import settings
@@ -38,13 +38,13 @@ def add_signature_headers(mail, sigs, error_msg):
     '''
     sig_from = ''
 
-    if len(sigs) == 0:
-        error_msg = error_msg or 'no signature found'
-    else:
-        try:
-            sig_from = crypto.get_key(sigs[0].fpr).uids[0].uid
-        except:
-            sig_from = sigs[0].fpr
+#    if len(sigs) == 0:
+    error_msg = error_msg or 'no signature found'
+#    else:
+#        try:
+#            sig_from = crypto.get_key(sigs[0].fpr).uids[0].uid
+#        except:
+#            sig_from = sigs[0].fpr
 
     mail.add_header(
         X_SIGNATURE_VALID_HEADER,
@@ -94,117 +94,117 @@ def message_from_file(handle):
     app_pgp_sig = 'application/pgp-signature'
     app_pgp_enc = 'application/pgp-encrypted'
 
-    # handle OpenPGP signed data
-    if (m.is_multipart() and
-        m.get_content_subtype() == 'signed' and
-            p.get('protocol', None) == app_pgp_sig):
-        # RFC 3156 is quite strict:
-        # * exactly two messages
-        # * the second is of type 'application/pgp-signature'
-        # * the second contains the detached signature
-
-        malformed = False
-        if len(m.get_payload()) != 2:
-            malformed = u'expected exactly two messages, got {0}'.format(
-                len(m.get_payload()))
-
-        ct = m.get_payload(1).get_content_type()
-        if ct != app_pgp_sig:
-            malformed = u'expected Content-Type: {0}, got: {1}'.format(
-                app_pgp_sig, ct)
-
-        # TODO: RFC 3156 says the alg has to be lower case, but I've
-        # seen a message with 'PGP-'. maybe we should be more
-        # permissive here, or maybe not, this is crypto stuff...
-        if not p.get('micalg', 'nothing').startswith('pgp-'):
-            malformed = u'expected micalg=pgp-..., got: {0}'.format(
-                p.get('micalg', 'nothing'))
-
-        sigs = []
-        if not malformed:
-            try:
-                sigs = crypto.verify_detached(m.get_payload(0).as_string(),
-                                              m.get_payload(1).get_payload())
-            except GPGProblem as e:
-                malformed = unicode(e)
-
-        add_signature_headers(m, sigs, malformed)
-
-    # handle OpenPGP encrypted data
-    elif (m.is_multipart() and
-          m.get_content_subtype() == 'encrypted' and
-          p.get('protocol', None) == app_pgp_enc and
-          'Version: 1' in m.get_payload(0).get_payload()):
-        # RFC 3156 is quite strict:
-        # * exactly two messages
-        # * the first is of type 'application/pgp-encrypted'
-        # * the first contains 'Version: 1'
-        # * the second is of type 'application/octet-stream'
-        # * the second contains the encrypted and possibly signed data
-        malformed = False
-
-        ct = m.get_payload(0).get_content_type()
-        if ct != app_pgp_enc:
-            malformed = u'expected Content-Type: {0}, got: {1}'.format(
-                app_pgp_enc, ct)
-
-        want = 'application/octet-stream'
-        ct = m.get_payload(1).get_content_type()
-        if ct != want:
-            malformed = u'expected Content-Type: {0}, got: {1}'.format(want,
-                                                                       ct)
-
-        if not malformed:
-            try:
-                sigs, d = crypto.decrypt_verify(m.get_payload(1).get_payload())
-            except GPGProblem as e:
-                # signature verification failures end up here too if
-                # the combined method is used, currently this prevents
-                # the interpretation of the recovered plain text
-                # mail. maybe that's a feature.
-                malformed = unicode(e)
-            else:
-                # parse decrypted message
-                n = message_from_string(d)
-
-                # add the decrypted message to m. note that n contains
-                # all the attachments, no need to walk over n here.
-                m.attach(n)
-
-                # add any defects found
-                m.defects.extend(n.defects)
-
-                # there are two methods for both signed and encrypted
-                # data, one is called 'RFC 1847 Encapsulation' by
-                # RFC 3156, and one is the 'Combined method'.
-                if len(sigs) == 0:
-                    # 'RFC 1847 Encapsulation', the signature is a
-                    # detached signature found in the recovered mime
-                    # message of type multipart/signed.
-                    if X_SIGNATURE_VALID_HEADER in n:
-                        for k in (X_SIGNATURE_VALID_HEADER,
-                                  X_SIGNATURE_MESSAGE_HEADER):
-                            m[k] = n[k]
-                    else:
-                        # an encrypted message without signatures
-                        # should arouse some suspicion, better warn
-                        # the user
-                        add_signature_headers(m, [], 'no signature found')
-                else:
-                    # 'Combined method', the signatures are returned
-                    # by the decrypt_verify function.
-
-                    # note that if we reached this point, we know the
-                    # signatures are valid. if they were not valid,
-                    # the else block of the current try would not have
-                    # been executed
-                    add_signature_headers(m, sigs, '')
-
-        if malformed:
-            msg = u'Malformed OpenPGP message: {0}'.format(malformed)
-            content = email.message_from_string(msg.encode('utf-8'))
-            content.set_charset('utf-8')
-            m.attach(content)
+#    # handle OpenPGP signed data
+#    if (m.is_multipart() and
+#        m.get_content_subtype() == 'signed' and
+#            p.get('protocol', None) == app_pgp_sig):
+#        # RFC 3156 is quite strict:
+#        # * exactly two messages
+#        # * the second is of type 'application/pgp-signature'
+#        # * the second contains the detached signature
+#
+#        malformed = False
+#        if len(m.get_payload()) != 2:
+#            malformed = u'expected exactly two messages, got {0}'.format(
+#                len(m.get_payload()))
+#
+#        ct = m.get_payload(1).get_content_type()
+#        if ct != app_pgp_sig:
+#            malformed = u'expected Content-Type: {0}, got: {1}'.format(
+#                app_pgp_sig, ct)
+#
+#        # TODO: RFC 3156 says the alg has to be lower case, but I've
+#        # seen a message with 'PGP-'. maybe we should be more
+#        # permissive here, or maybe not, this is crypto stuff...
+#        if not p.get('micalg', 'nothing').startswith('pgp-'):
+#            malformed = u'expected micalg=pgp-..., got: {0}'.format(
+#                p.get('micalg', 'nothing'))
+#
+#        sigs = []
+#        if not malformed:
+#            try:
+#                sigs = crypto.verify_detached(m.get_payload(0).as_string(),
+#                                              m.get_payload(1).get_payload())
+#            except GPGProblem as e:
+#                malformed = unicode(e)
+#
+#        add_signature_headers(m, sigs, malformed)
+#
+#    # handle OpenPGP encrypted data
+#    elif (m.is_multipart() and
+#          m.get_content_subtype() == 'encrypted' and
+#          p.get('protocol', None) == app_pgp_enc and
+#          'Version: 1' in m.get_payload(0).get_payload()):
+#        # RFC 3156 is quite strict:
+#        # * exactly two messages
+#        # * the first is of type 'application/pgp-encrypted'
+#        # * the first contains 'Version: 1'
+#        # * the second is of type 'application/octet-stream'
+#        # * the second contains the encrypted and possibly signed data
+#        malformed = False
+#
+#        ct = m.get_payload(0).get_content_type()
+#        if ct != app_pgp_enc:
+#            malformed = u'expected Content-Type: {0}, got: {1}'.format(
+#                app_pgp_enc, ct)
+#
+#        want = 'application/octet-stream'
+#        ct = m.get_payload(1).get_content_type()
+#        if ct != want:
+#            malformed = u'expected Content-Type: {0}, got: {1}'.format(want,
+#                                                                       ct)
+#
+#        if not malformed:
+#            try:
+#                sigs, d = crypto.decrypt_verify(m.get_payload(1).get_payload())
+#            except GPGProblem as e:
+#                # signature verification failures end up here too if
+#                # the combined method is used, currently this prevents
+#                # the interpretation of the recovered plain text
+#                # mail. maybe that's a feature.
+#                malformed = unicode(e)
+#            else:
+#                # parse decrypted message
+#                n = message_from_string(d)
+#
+#                # add the decrypted message to m. note that n contains
+#                # all the attachments, no need to walk over n here.
+#                m.attach(n)
+#
+#                # add any defects found
+#                m.defects.extend(n.defects)
+#
+#                # there are two methods for both signed and encrypted
+#                # data, one is called 'RFC 1847 Encapsulation' by
+#                # RFC 3156, and one is the 'Combined method'.
+#                if len(sigs) == 0:
+#                    # 'RFC 1847 Encapsulation', the signature is a
+#                    # detached signature found in the recovered mime
+#                    # message of type multipart/signed.
+#                    if X_SIGNATURE_VALID_HEADER in n:
+#                        for k in (X_SIGNATURE_VALID_HEADER,
+#                                  X_SIGNATURE_MESSAGE_HEADER):
+#                            m[k] = n[k]
+#                    else:
+#                        # an encrypted message without signatures
+#                        # should arouse some suspicion, better warn
+#                        # the user
+#                        add_signature_headers(m, [], 'no signature found')
+#                else:
+#                    # 'Combined method', the signatures are returned
+#                    # by the decrypt_verify function.
+#
+#                    # note that if we reached this point, we know the
+#                    # signatures are valid. if they were not valid,
+#                    # the else block of the current try would not have
+#                    # been executed
+#                    add_signature_headers(m, sigs, '')
+#
+#        if malformed:
+#            msg = u'Malformed OpenPGP message: {0}'.format(malformed)
+#            content = email.message_from_string(msg.encode('utf-8'))
+#            content.set_charset('utf-8')
+#            m.attach(content)
 
     return m
 

@@ -15,7 +15,7 @@ from alot.account import SendingMailFailed, StoreMailError
 from alot.errors import GPGProblem
 from alot import buffers
 from alot import commands
-from alot import crypto
+#from alot import crypto
 from alot.commands import Command, registerCommand
 from alot.commands import globals
 from alot.commands.utils import get_keys
@@ -482,18 +482,18 @@ class SignCommand(Command):
         envelope.sign = sign
 
         # try to find key if hint given as parameter
-        if sign:
-            if len(self.keyid) > 0:
-                keyid = str(' '.join(self.keyid))
-                try:
-                    key = crypto.get_key(keyid, validate=True, sign=True)
-                except GPGProblem, e:
-                    envelope.sign = False
-                    ui.notify(e.message, priority='error')
-                    return
-                envelope.sign_key = key
-        else:
-            envelope.sign_key = None
+#        if sign:
+#            if len(self.keyid) > 0:
+#                keyid = str(' '.join(self.keyid))
+#                try:
+#                    key = crypto.get_key(keyid, validate=True, sign=True)
+#                except GPGProblem, e:
+#                    envelope.sign = False
+#                    ui.notify(e.message, priority='error')
+#                    return
+#                envelope.sign_key = key
+#        else:
+        envelope.sign_key = None
 
         # reload buffer
         ui.current_buffer.rebuild()
@@ -532,12 +532,12 @@ class EncryptCommand(Command):
     def apply(self, ui):
         envelope = ui.current_buffer.envelope
         if self.action == 'rmencrypt':
-            try:
-                for keyid in self.encrypt_keys:
-                    tmp_key = crypto.get_key(keyid)
-                    del envelope.encrypt_keys[crypto.hash_key(tmp_key)]
-            except GPGProblem as e:
-                ui.notify(e.message, priority='error')
+#            try:
+#                for keyid in self.encrypt_keys:
+#                    tmp_key = crypto.get_key(keyid)
+#                    del envelope.encrypt_keys[crypto.hash_key(tmp_key)]
+#            except GPGProblem as e:
+#                ui.notify(e.message, priority='error')
             if not envelope.encrypt_keys:
                 envelope.encrypt = False
             ui.current_buffer.rebuild()

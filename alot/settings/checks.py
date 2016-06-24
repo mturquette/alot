@@ -9,7 +9,7 @@ from validate import VdtTypeError
 from validate import is_list
 from validate import ValidateError, VdtValueTooLongError, VdtValueError
 
-from alot import crypto
+#from alot import crypto
 from alot.errors import GPGProblem
 
 
@@ -140,7 +140,8 @@ def gpg_key(value):
     test if value points to a known gpg key
     and return that key as :class:`pyme.pygpgme._gpgme_key`.
     """
-    try:
-        return crypto.get_key(value)
-    except GPGProblem, e:
-        raise ValidateError(e.message)
+#    try:
+#        return crypto.get_key(value)
+#    except GPGProblem, e:
+#        raise ValidateError(e.message)
+    return
